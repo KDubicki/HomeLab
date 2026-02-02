@@ -1,0 +1,10 @@
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+*.tfvars
+
+# Secrets
+secrets.txt
+token.txt
+.env
