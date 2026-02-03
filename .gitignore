@@ -8,3 +8,6 @@
 secrets.txt
 token.txt
 .env
+
+# Plan
+plan*.md
