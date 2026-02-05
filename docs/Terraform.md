@@ -30,3 +30,37 @@ To automate resource management on the Proxmox VE hypervisor (Dell Optiplex) usi
 
 ---
 **Git Commit:** `feat(terraform): setup init`
+
+# 2. Virtual Machine Deployment (Cloud-Init & Scaling)
+
+## Objective
+To automate the provisioning of virtual machines on the Dell hypervisor, ensuring consistent resource allocation on the NVMe and immediate accessibility via SSH.
+
+## Tasks Completed
+
+### 1. Resource Provisioning & Hardware Mapping
+* Implemented the `proxmox_virtual_environment_vm` resource using the `bpg/proxmox` provider (v0.66.1).
+* Allocated hardware resources for `worker-01`: 2 vCPUs (host type) and 2048MB of dedicated RAM.
+* Successfully mapped VM virtual disks to the `nvme-data` (LVM-Thin) storage pool on the NVMe drive.
+
+### 2. Cloud-Init Configuration
+* Enabled automated post-install configuration via Cloud-Init.
+* Defined the default `ubuntu` user account and injected the local public SSH key (`id_ed25519.pub`) for passwordless authentication.
+* Assigned a static IPv4 address (`192.168.0.110/24`) and gateway to the VM instance.
+
+### 3. Security & Variables Management
+* Decoupled sensitive credentials (API tokens, SSH keys) from the core logic into a `secret.tfvars` file.
+* Verified that the `.gitignore` correctly prevents tracking of `*.tfvars` and `.tfstate` files.
+
+## Technical Notes
+* **Provider**: `bpg/proxmox` (v0.66.1).
+* **Source Template**: Ubuntu 24.04 Cloud-Init Image (VM ID 9000).
+* **Verification**: Confirmed successful SSH handshake via `ssh ubuntu@192.168.0.110`.
+
+### Next Steps
+* Configure Proxmox SDN (Simple Zone) to create an isolated laboratory network (`vnet1`).
+* Move from standard bridge (`vmbr0`) to the new SDN for improved security and micro-segmentation.
+
+---
+
+**Git Commit:** `feat(iac): implement cloud-init vm deployment with sensitive var separation`
