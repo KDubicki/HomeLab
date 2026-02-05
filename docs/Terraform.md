@@ -31,7 +31,7 @@ To automate resource management on the Proxmox VE hypervisor (Dell Optiplex) usi
 ---
 **Git Commit:** `feat(terraform): setup init`
 
-# 2. Virtual Machine Deployment (Cloud-Init & Scaling)
+# 2: Virtual Machine Deployment (Cloud-Init & Scaling)
 
 ## Objective
 To automate the provisioning of virtual machines on the Dell hypervisor, ensuring consistent resource allocation on the NVMe and immediate accessibility via SSH.
@@ -62,5 +62,16 @@ To automate the provisioning of virtual machines on the Dell hypervisor, ensurin
 * Move from standard bridge (`vmbr0`) to the new SDN for improved security and micro-segmentation.
 
 ---
+**Git Commit:** `feat(terraform): implement cloud-init vm deployment with sensitive var separation`
 
-**Git Commit:** `feat(iac): implement cloud-init vm deployment with sensitive var separation`
+
+# 3: SDN Networking & Micro-segmentation (Day 4)
+* **Network Migration**: Moved `worker-01` from physical bridge `vmbr0` to isolated SDN bridge `vnet1`.
+* **DHCP Transition**: Switched IPv4 configuration from static to `dhcp` handled by Proxmox SDN IPAM.
+* **Firewall Implementation**: 
+    * Enabled `firewall = true` on the VM network interface.
+    * Applied `proxmox_virtual_environment_firewall_rules` resource.
+    * Defined rules: **ACCEPT** SSH (22) from `192.168.0.0/24` and **DROP** all other inbound traffic.
+
+---
+**Git Commit:** `feat(terraform): migrate worker-01 to vnet1 and apply default-deny firewall`
