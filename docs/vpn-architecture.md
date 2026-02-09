@@ -7,7 +7,9 @@ This VPN provides secure remote access to the isolated Lab Network (`10.10.0.0/2
 * **Protocol**: WireGuard (UDP)
 * **Listen Port**: `51820`
 * **VPN Gateway IP**: `10.99.0.1` (Internal)
-* **NAT Interface**: `eth1` (Connects to `vmbr1`)
+* **WAN Interface**: `eth0` (Connects to `vmbr0`)
+* **LAB Interface**: `eth1` (Connects to `vmbr1`)
+* **Routing Policy**: MASQUERADE on `eth0` for `10.10.0.0/24`
 
 ## 3. Client Configuration Standards
 Every Windows client must use these settings to ensure connectivity:
