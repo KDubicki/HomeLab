@@ -13,7 +13,7 @@
 ## 3. Connectivity & Access
 - **Internal IP**: `10.10.0.10`
 - **Gateway**: `10.10.0.2`
-- **DNS**: `8.8.8.8`, `1.1.1.1`
+- **DNS**: `10.10.0.5` (Internal CoreDNS / Service Discovery)
 
 ### Remote Access (VS Code)
 To manage the lab from a Windows machine, use the **Remote - SSH** extension:
@@ -22,10 +22,13 @@ To manage the lab from a Windows machine, use the **Remote - SSH** extension:
 - **Working Dir**: `/root/infrastructure`
 
 ## 4. GitOps Workflow
-The project is synchronized with `HomeLab` on GitHub.
+The project is synchronized with `HomeLab` on GitHub. All infrastructure changes should be committed and pushed from this node to maintain a single source of truth.
 
-## 5. Maintenance Commands
+## 5. Maintenance & Verification
 - **Re-provision**: `bash/ops-node/provision-ops-node.sh`
+- **Verify DNS Resolution**:
+  - `ping gateway.lab` (Should resolve to `10.10.0.2`)
+  - `ping dns.lab` (Should resolve to `10.10.0.5`)
 - **Check Tools**:
   - `terraform -version`
   - `ansible --version`
