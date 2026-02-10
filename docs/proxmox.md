@@ -14,6 +14,7 @@
 | ID | Hostname | IP Address | Purpose | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **200** | local-gateway | 10.10.0.2 / 10.99.0.1 | NAT Router & WireGuard Server | Active |
+| **220** | dns-node | 10.10.0.5 | CoreDNS Service Discovery (.lab) | Active |
 | **210** | ops-node | 10.10.0.10 | IaC Hub (Terraform, Ansible) | Active |
 
 ---
@@ -35,7 +36,8 @@
 ---
 
 ## 5. Key Security Settings (Applied)
-* **LXC Privileged Mode**: Enabled for VPN Gateways to allow WireGuard kernel-space operations.
+* **LXC Privileged Mode**: Enabled for VPN Gateway (CT 200) to allow WireGuard kernel-space operations.
 * **AppArmor**: Set to `unconfined` for CT 200 to allow tun/tap access.
-* **IP Forwarding**: Enabled on Host and Gateway CT.
+* **IP Forwarding**: Enabled on Host and Gateway CT to allow routing between segments.
 * **UDP Checksum Offloading**: Disabled on `vmbr0` to fix WireGuard packet drops.
+* **DNS Resolution**: All lab containers are configured via `pct set` to use `10.10.0.5` with the `lab` search domain.
