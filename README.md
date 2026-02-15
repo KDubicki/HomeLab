@@ -52,3 +52,5 @@ To verify the internal networking and DNS resolution, run these commands from th
 2. **Service Discovery**: `pct exec 210 -- ping -c 3 gateway.lab` (resolves to `10.10.0.2`).
 3. **Internal Connectivity**: `pct exec 210 -- ping -c 3 dns.lab`.
 4. **External Access**: `pct exec 210 -- ping -c 3 google.com`.
+5. **Observability**: `pct exec 210 -- curl -I http://localhost:3001` (Check if Uptime Kuma is up).
+6. **Internal DNS Resolve**: `pct exec 220 -- dig +short @127.0.0.1 status.lab`.
