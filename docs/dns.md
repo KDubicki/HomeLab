@@ -23,9 +23,10 @@ The following authoritative A-records are defined for the internal environment:
 
 | Hostname | IP Address | Description |
 | :--- | :--- | :--- |
-| `gateway.lab` | `10.10.0.2` | NAT & WireGuard Gateway |
-| `dns.lab` | `10.10.0.5` | Internal CoreDNS Server |
-| `ops-node.lab` | `10.10.0.10` | Central Management Node |
+| `gateway.lab` | 10.10.0.2 | NAT & WireGuard Gateway |
+| `dns.lab` | 10.10.0.5 | Internal CoreDNS Server |
+| `ops-node.lab` | 10.10.0.10 | Central Management Node |
+| `status.lab` | 10.10.0.10 | Monitoring Dashboard (Uptime Kuma) |
 
 ---
 
