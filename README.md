@@ -2,6 +2,11 @@
 
 This project documents my home-scale cloud infrastructure based on **Proxmox VE 9.x**. It focuses on creating an automated, hybrid environment with isolated network segments, secure remote access, and Infrastructure as Code (IaC) workflows.
 
+## 📖 Project Documentation
+- [Network Topology](NETWORK.md) - Deep dive into bridges and subnets.
+- [Proxmox Infrastructure](proxmox.md) - Host and VM details.
+- [VPN Access](vpn-architecture.md) - WireGuard configuration.
+
 ## 🛠 Tech Stack
 - **Virtualization:** Proxmox VE 9.x (Debian 13 Trixie)
 - **IaC & Automation:** Terraform, Ansible, Bash
