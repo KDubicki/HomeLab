@@ -19,11 +19,9 @@
 
 ---
 
-## 3. Network Bridges
-| Bridge | IP Address | Purpose |
-| :--- | :--- | :--- |
-| **vmbr0** | 192.168.0.113 | Public/Home LAN Access |
-| **vmbr1** | 10.10.0.1 | Isolated Lab Network (Gateway) |
+## 3. Network Bridge Configuration
+* **vmbr0 (WAN/LAN)**: Bridged to Physical NIC. Provides `192.168.0.113` for Proxmox UI.
+* **vmbr1 (Isolated)**: No physical port. Acts as a virtual switch for the `10.10.0.0/24` subnet.
 
 ---
 
