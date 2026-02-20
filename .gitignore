@@ -1,16 +1,14 @@
-# Terraform files
+# Terraform
 .terraform/
 *.tfstate
 *.tfstate.backup
 *.tfvars
-*.tfvars.json
 
-# Secrets
-secrets.txt
-token.txt
-.env
+# Ansible
+*.retry
+inventory.ini
 
-# Plan
-persona.md
-plan*.md
-homeLab.conf
+# System & OS
+.DS_Store
+*.log
+tmp/
