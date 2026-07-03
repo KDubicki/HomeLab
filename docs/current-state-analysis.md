@@ -8,17 +8,19 @@ The Proxmox host was reinstalled. All VMs/containers, the `vmbr1` lab network, a
 This reboot reframes the project's purpose: previously an ad-hoc self-hosting setup, it is now being deliberately designed as a **long-term DevOps + Data Engineering portfolio project** — something to demonstrate real infrastructure and data platform skills to employers, built and documented incrementally.
 
 ## What exists right now
-- **Proxmox VE 9.2.2** on a Dell OptiPlex 7070 (i5-9600, 32GB RAM, 1TB NVMe + orphaned 256GB SSD) — full detail in [hardware.md](hardware.md).
+- **Proxmox VE 9.2.4** (kernel 7.0.14-2-pve) on a Dell OptiPlex 7070 (i5-9600, 32GB RAM, 1TB NVMe `local-lvm` + 256GB SSD reclaimed as `ssd-data`) — full detail in [hardware.md](hardware.md).
 - **Network**: single 1GbE NIC, single bridge `vmbr0` on `192.168.0.113/24`. No internal/lab network segment exists yet.
 - **Access**: SSH key-based root login configured (dedicated key `~/.ssh/id_ed25519_proxmox`, `ssh proxmox` alias) — see [proxmox-ssh-access.md](../proxmox-ssh-access.md).
 - **Zero running workloads.** No VMs, no containers, no services.
+- **Storage reclaimed** (change-log/0002, 2026-07-03): the legacy 256 GB SSD — which actually held a *full* old Proxmox install, not a stray image — was wiped and is now the `ssd-data` lvmthin pool (233.5 GiB, empty). `local-lvm` (816 GiB) and `local` unchanged.
+- **IaC identity** (change-log/0002, done): Proxmox API user `terraform@pve` + token `provider` + role `TerraformProv` (21 PVE-9 privileges) + ACL at `/` — the least-privilege identity for Terraform (0003). Host `full-upgrade`d to **PVE 9.2.4**, running kernel **7.0.14-2-pve**.
 - **This git repository**, reset to a near-empty state with the previous work preserved under `old_homelab/`.
 
 ## Constraints this design has to respect
 - **Single node, no HA**: 6 vCPU / 32GB RAM is enough for a meaningful k3s + data-platform stack running concurrently, but not for real fault-tolerant clustering. Any "cluster" work here demonstrates the pattern, not production resilience — that should be stated honestly in the portfolio framing rather than overclaimed.
 - **No dedicated GPU**: rules out GPU-accelerated ML as a component; data engineering work should lean on CPU-based tools (e.g. DuckDB, Polars, Spark local mode) rather than needing GPU acceleration.
 - **One physical NIC**: any network segmentation (e.g. isolating a "lab" subnet from the host's LAN-facing IP, as the old setup did with `vmbr1`) will need VLAN tagging or a second no-uplink bridge on the same NIC, not a second physical interface.
-- **Reclaimable storage**: the old SATA SSD's leftover LVM volume group (`pve-OLD-B195BA60`, ~237GB) is unused and should be wiped and repurposed — good candidate for isolating database/object-storage I/O away from the NVMe pool.
+- **Reclaimable storage** (DONE 2026-07-03): the old SATA SSD's LVM volume group (`pve-OLD-B195BA60`, a full previous install) has been wiped and repurposed as the `ssd-data` lvmthin pool — dedicated to database/object-storage I/O, isolated from the NVMe pool.
 
 ## Open decisions before the build phase
 These need to be settled (with you) before writing any Terraform/Ansible/Kubernetes manifests, since they shape the repo structure itself:

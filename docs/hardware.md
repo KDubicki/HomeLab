@@ -9,7 +9,7 @@ Collected via SSH on `192.168.0.113` (`ssh proxmox`). Reflects the state immedia
 | **Serial** | 90HHR33 |
 | **BIOS/Firmware** | 1.34.0 (2025-06-30) |
 | **OS** | Debian GNU/Linux 13 (Trixie) |
-| **Hypervisor** | Proxmox VE 9.2.2 (kernel 7.0.2-6-pve) |
+| **Hypervisor** | Proxmox VE 9.2.4 (kernel 7.0.14-2-pve) — upgraded 2026-07-03 |
 
 ## CPU
 | Property | Value |
@@ -33,23 +33,24 @@ Two physical drives, currently asymmetric in role:
 | Device | Model | Capacity | Role |
 | :--- | :--- | :--- | :--- |
 | `nvme0n1` | Lexar NM790 | 1 TB (952.9G partition) | **Primary** — fresh Proxmox install lives here |
-| `sda` | Crucial/Micron MTFDDAK256TBN | 256 GB (238.5G) | **Legacy/orphaned** — see below |
+| `sda` | Crucial/Micron MTFDDAK256TBN | 256 GB (238.5G) | **Reclaimed** → `ssd-data` lvmthin pool (see below) |
 
 ### NVMe (`nvme0n1`) — active
 - `pve-root`: 96 GB (`/`) — currently 4.2G used, 85G free
 - `pve-swap`: 8 GB
 - `pve-data` (LVM-thin, `local-lvm`): 816 GB — **primary pool for VM/CT disks**, currently 0% used
 
-### SATA SSD (`sda`) — orphaned from previous install
-Volume group `pve-OLD-B195BA60` (~237 GB) survived the reinstall untouched because only the NVMe was reimaged. It still contains a leftover disk image (`vm-220-disk-0`, 4G) from the old `dns-node` container. **This VG is not mounted, not registered as Proxmox storage, and safe to reclaim.**
+### SATA SSD (`sda`) — reclaimed as `ssd-data` (2026-07-03)
+This disk originally held a **full previous Proxmox install** in VG `pve-OLD-B195BA60` (~237 GB: `root` 69 GB, `swap` 8 GB, a `data` thin pool ~141 GB, and a leftover `vm-220-disk-0`) — **not** a single stray 4 GB image, as an earlier draft of this doc incorrectly stated (scan-verified 2026-07-03). It survived the NVMe-only reinstall, unmounted and unregistered.
 
-**Action needed**: wipe `pve-OLD-B195BA60` and either (a) re-register the 256GB SSD as a second Proxmox storage pool (e.g. for backups/ISOs/templates, keeping fast NVMe free for VM I/O), or (b) repurpose it as dedicated storage for a data-engineering workload (e.g. a Postgres/MinIO data volume separate from OS disk contention).
+Reclaimed per `change-log/0002`: the old VG was removed and the disk wiped, then recreated as VG `ssd-data` with an lvmthin pool `data`, registered as Proxmox storage **`ssd-data`** (content `images,rootdir`). It is the dedicated pool for stateful data volumes (Vault/Postgres/MinIO), isolating their I/O from the NVMe OS pool.
 
 ### Proxmox storage registered today
 | Storage ID | Type | Total | Used | Content |
 | :--- | :--- | :--- | :--- | :--- |
 | `local` | Directory (on root) | 94 GiB | 4.2 GiB | ISOs, templates, backups |
 | `local-lvm` | LVM-thin | 816 GiB | 0 | VM/CT disk images |
+| `ssd-data` | LVM-thin (on `sda`) | 233.5 GiB | 0 | stateful data volumes (`images,rootdir`) |
 
 ## Network
 | Property | Value |
@@ -71,4 +72,4 @@ Volume group `pve-OLD-B195BA60` (~237 GB) survived the reinstall untouched becau
 With 6 vCPU / 32GB RAM / 816GB fast storage on a single node:
 - No room for a multi-node HA Kubernetes cluster with real fault tolerance — a single-node **k3s** (or 1 control-plane + lightweight agents as VMs on the same host) is the realistic ceiling, positioned as "cluster architecture knowledge demonstrated," not "production HA."
 - 32GB is comfortable for: k3s + observability stack (Prometheus/Grafana/Loki) + a data pipeline stack (Airflow/Dagster + Postgres + object storage) run concurrently, as long as each component's requests/limits are set deliberately.
-- The orphaned 256GB SSD, once reclaimed, is well-suited as a dedicated volume for a database or object-store workload, isolating its I/O from the OS/NVMe pool.
+- The 256GB SSD is now reclaimed as the `ssd-data` pool (233.5 GiB, empty) — the dedicated volume for database/object-store workloads, isolating their I/O from the OS/NVMe pool.

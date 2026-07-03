@@ -3,8 +3,16 @@
 Run every category against the target `Accepted` change-plan before authoring its runbook. Each yields OK / CONDITION / FAIL. Any FAIL ⇒ **SEND-BACK**. Any CONDITION with no FAIL ⇒ **PASS-WITH-CONDITIONS**. All OK ⇒ **PASS**.
 
 ## 1. Status & authority
-- [ ] The change-plan is `Accepted` (not `Proposed`/`Rejected`/`Superseded`). A non-Accepted plan is an automatic SEND-BACK — the architect owns it.
+- [ ] The change-plan exists and is not `Rejected`/`Superseded`. `Accepted` is preferred; a still-`Proposed` plan can be worked when you are invoked directly (`devops 000N`) — note it and flag the architect to confirm the status. Only a genuine design defect is a SEND-BACK.
 - [ ] It is one decision, not several tangled together.
+
+## 1b. Live-state & release scan (do this first, via `ssh proxmox`)
+- [ ] `pveversion` (+ `uname -r`) captured — every command, package, and privilege name in the runbook targets **this** release.
+- [ ] Every privilege / flag / parameter a step uses is confirmed to exist in this release (e.g. `pveum role list`), not assumed from memory.
+- [ ] Every object the plan creates was checked for prior existence (`pvs; vgs; lvs; pvesm status; pveum user list; pveum role list; qm list; pct list; ip -br a`) — the runbook reflects the real current→desired delta (idempotent or a targeted completion where something already exists), not a blind create.
+- [ ] Real free CPU/RAM/storage read from the node (`free -h; nproc; pvesm status; lsblk`) — this, not a doc, feeds the cumulative budget in §2.
+- [ ] Device names (e.g. which disk is the SSD) confirmed via `lsblk`, not assumed from a doc.
+- [ ] Where the scan and a doc disagree, the scan wins; flag the `architect` to correct the doc before authoring around the real value.
 
 ## 2. Fit to the hardware ceiling (cumulative)
 - [ ] Sum **vCPU** across all `Accepted`+`Implemented` plans **plus this one**. Flag if nominal allocation exceeds 6 with no idle headroom to justify oversubscription.

@@ -1,15 +1,19 @@
 # 0002 — Host & Storage Hygiene
 
-- **Status**: Accepted
+- **Status**: Implemented
 - **Date proposed**: 2026-07-03
 - **Date decided**: 2026-07-03
-- **Date implemented**: —
+- **Date implemented**: 2026-07-03
 - **Owner**: KDubicki
 - **Related plans**: 0001 (foundation, umbrella); precedes 0003
 - **Depends on**: none — first executable slice
 
 ## Context
 Post-reinstall, the host has an orphaned 256 GB SATA SSD carrying a dead volume group `pve-OLD-B195BA60` (~237 GB, unmounted, unregistered, safe to reclaim — `docs/hardware.md`). The only admin path today is root over SSH; there is no dedicated API identity for automation. Terraform (0003) will need both a place for stateful data and a least-privilege API credential.
+
+**Verified baseline (scanned 2026-07-03, PVE 9.2.2 / kernel 7.0.2-6-pve):** the legacy SSD held a *full* previous Proxmox install (`root` 69 GB + `swap` 8 GB + a ~141 GB `data` thin pool + `vm-220-disk-0`), not the single stray image an earlier `hardware.md` draft implied — all unmounted, unregistered, and safe to reclaim. 6 cores / ~28 GB RAM free, no VMs/CTs, single bridge `vmbr0`.
+
+**Implementation status — DONE (2026-07-03):** all executed and independently tester-verified. `ssd-data` lvmthin pool (233.5 GiB) registered; API identity `terraform@pve` + token `provider` + role `TerraformProv` (21 PVE-9-valid privileges, no `VM.Monitor`) + ACL at `/`; no-subscription repo enabled with both enterprise repos (`pve-enterprise`, `ceph`) disabled and `apt update` clean; host `full-upgrade`d to **PVE 9.2.4** and rebooted onto kernel **7.0.14-2-pve**. Two runbook defects were caught by the executer/tester loop and fixed by `devops` before completion: `VM.Monitor` (absent in PVE 9) and the deb822 enterprise-repo disable (a `sed` no-op).
 
 ## Decision
 Prepare the host for IaC-driven use:
@@ -48,5 +52,6 @@ Separating data storage from the OS pool is the on-prem analog of attaching a de
 Demonstrates deliberate storage tiering and least-privilege API access on the hypervisor — the on-prem equivalents of dedicated data volumes and scoped IAM credentials. Does not claim redundancy: the SSD is a single disk, no RAID.
 
 ## Follow-ups
+- [x] **`devops`: correct runbook Step 5** (`VM.Monitor` removed, idempotent) and **Step 6** (deb822 enterprise-repo disable for `pve-enterprise` + `ceph`) — done 2026-07-03; executed and tester-verified.
 - [ ] Migrate the `terraform@pve` token into Vault once 0005 lands.
-- [ ] Update `docs/current-state-analysis.md` and `docs/hardware.md` (storage table) when implemented.
+- [x] Update `docs/current-state-analysis.md` and `docs/hardware.md` (storage table) — done 2026-07-03 (storage reclaim reflected; SSD description corrected).
