@@ -17,7 +17,7 @@ Seven slices, executed in order. Each has an ADR in `change-plan/`; runbooks are
 
 | # | Slice | Change-plan status | Runbook |
 | :--- | :--- | :--- | :--- |
-| 0002 | Host & storage hygiene | Proposed | to author |
+| 0002 | Host & storage hygiene | Accepted | Validated |
 | 0003 | IaC control plane (Terraform + template + Ansible) | Proposed | to author |
 | 0004 | Private-subnet network (VPC analog) | Proposed | to author |
 | 0005 | Vault secrets | Proposed | to author |
@@ -25,7 +25,7 @@ Seven slices, executed in order. Each has an ADR in `change-plan/`; runbooks are
 | 0007 | Managed-services tier (Postgres + MinIO) | Proposed | to author |
 | 0008 | Observability (Prometheus/Grafana/Loki) | Proposed | to author |
 
-**Current focus: 0002** — cheapest slice, unblocks everything. Next step: accept 0002, then hand to `devops` to validate + author its runbook.
+**Current focus: 0002** — Accepted; `devops` is authoring its runbook. Next: execute 0002 (the future `operator`), then 0003.
 
 ## Documentation map
 - **Hardware ceiling** — `docs/hardware.md`

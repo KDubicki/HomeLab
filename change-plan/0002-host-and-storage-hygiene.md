@@ -1,8 +1,8 @@
 # 0002 — Host & Storage Hygiene
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date proposed**: 2026-07-03
-- **Date decided**: —
+- **Date decided**: 2026-07-03
 - **Date implemented**: —
 - **Owner**: KDubicki
 - **Related plans**: 0001 (foundation, umbrella); precedes 0003
