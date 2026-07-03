@@ -13,5 +13,5 @@ inventory.ini
 *.log
 tmp/
 
-# AI
-.claude/
+# AI — track shared Claude config (skills, commands), ignore machine-local settings
+.claude/settings.local.json
