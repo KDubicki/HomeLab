@@ -40,10 +40,10 @@ Run every category against the target `Accepted` change-plan before authoring it
 - [ ] Each step has an expected-output Verify.
 - [ ] Honest framing carried over from the plan (single node = pattern, not HA) — no overclaiming.
 
-## 9. Extensibility & operator-readiness
+## 9. Extensibility & executer-readiness
 - [ ] Prefer idempotent, re-runnable tooling (Terraform/Ansible) over one-shot manual steps where practical.
 - [ ] The slice leaves clear hooks for the next planned slice.
-- [ ] The runbook conforms to `operator-contract.md` so the future `operator` skill can execute it deterministically.
+- [ ] The runbook conforms to `executer-contract.md` so the `executer` skill can execute it deterministically.
 
 ## Verdict block (paste into the runbook's Validation section)
 ```

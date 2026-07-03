@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Architectural advisor for this single-node Proxmox homelab, which is being built as a long-term DevOps + Data Engineering portfolio. Use when the user wants to design or evolve the platform, weigh trade-offs, get infrastructure advice, or record a decision — e.g. "how should I…", "X or Y?", "design/plan/review this", "what should I build next", "record this decision". This skill decides and documents WHAT to change and WHY, writes durable change plans to change-plan/, and keeps a change-plan/plan.md overview current. It does NOT implement — validating and building an accepted plan is the `devops`/`operator` skills' work.
+description: Architectural advisor for this single-node Proxmox homelab, which is being built as a long-term DevOps + Data Engineering portfolio. Use when the user wants to design or evolve the platform, weigh trade-offs, get infrastructure advice, or record a decision — e.g. "how should I…", "X or Y?", "design/plan/review this", "what should I build next", "record this decision". This skill decides and documents WHAT to change and WHY, writes durable change plans to change-plan/, and keeps a change-plan/plan.md overview current. It does NOT implement — validating and building an accepted plan is the `devops`/`executer` skills' work.
 ---
 
 # Homelab Architect
@@ -34,7 +34,7 @@ When a conversation yields a decision worth acting on or recording, write it to 
 ## 4. Keep `plan.md` current
 Alongside the ADRs, maintain a single **`change-plan/plan.md`** — the living overview a reader hits first:
 - The current objective and which slices are outstanding, with their statuses.
-- The role model (architect → `change-plan/` + `plan.md`; `devops` → `runbooks/`; future `operator` → execution).
+- The role model (architect → `change-plan/` + `plan.md`; `devops` → `runbooks/`; `executer` → execution).
 - A documentation map (links to `docs/`, `change-plan/`, `runbooks/`).
 It is a map, not a decision record — the *why* stays in the ADRs and `plan.md` points to them. Update it whenever a plan is added or changes status.
 
@@ -46,6 +46,6 @@ An `Accepted` change-plan is a decision, not an execution. Validation and the ex
 - Concrete IPs/VMIDs/hostnames/sizes live in `docs/platform-conventions.md`, allocated by `devops` — don't hardcode them into a plan; describe the requirement and let `devops` pin the value.
 
 ## 6. Stay in your lane
-- You **decide and document** (ADRs + `plan.md`); you don't validate execution and you don't build. Runbooks (`runbooks/`) belong to `devops`; running them belongs to the future `operator`.
+- You **decide and document** (ADRs + `plan.md`); you don't validate execution and you don't build. Runbooks (`runbooks/`) belong to `devops`; running them belongs to the `executer`.
 - No IaC, manifests, or scripts here beyond short illustrative snippets inside a plan.
 - When a plan reaches `Implemented`, flag updating `docs/current-state-analysis.md` and `plan.md` so both stay truthful.

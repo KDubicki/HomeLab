@@ -6,8 +6,8 @@ The living entry point to what this homelab is doing right now. Maintained by th
 | Skill | Owns | Does |
 | :--- | :--- | :--- |
 | **architect** | `change-plan/` + this `plan.md` | Decides *what* and *why*; writes ADRs and keeps this overview current. |
-| **devops** | `runbooks/` | Validates an `Accepted` change-plan, authors its executable runbook, and maintains the operator contract. |
-| **operator** *(future)* | execution | Runs runbook tasks against the live node, following the operator contract. Not built yet. |
+| **devops** | `runbooks/` | Validates an `Accepted` change-plan, authors its executable runbook, and maintains the executer contract. |
+| **executer** | execution | Runs the validated runbook tasks against the live node, following the executer contract. |
 
 ## Current objective
 Build the **cloud-analog platform foundation** — a reproducible, IaC-driven platform floor before any data-engineering workload. Umbrella decision: `change-plan/0001-cloud-analog-platform-foundation.md` (**Accepted**).
@@ -25,7 +25,7 @@ Seven slices, executed in order. Each has an ADR in `change-plan/`; runbooks are
 | 0007 | Managed-services tier (Postgres + MinIO) | Proposed | to author |
 | 0008 | Observability (Prometheus/Grafana/Loki) | Proposed | to author |
 
-**Current focus: 0002** — Accepted; `devops` is authoring its runbook. Next: execute 0002 (the future `operator`), then 0003.
+**Current focus: 0002** — Accepted; runbook authored by `devops` (Validated). Next: execute 0002 with the `executer`, then 0003.
 
 ## Documentation map
 - **Hardware ceiling** — `docs/hardware.md`
