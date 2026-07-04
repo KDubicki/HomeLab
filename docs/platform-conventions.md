@@ -25,12 +25,14 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 | Private subnet | `10.10.10.0/24` |
 | Gateway (edge) | `10.10.10.1` |
 | DNS for private subnet | `10.10.10.1` (dnsmasq on edge) |
+| DHCP range (private subnet) | `10.10.10.100`–`10.10.10.200` (below `.100` is reserved for statically-assigned guests) |
 
 ## IP & ID allocation plan
 | Role | Hostname | Proxmox ID | Type | Private IP | LAN IP |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Golden template | `debian13-cloud` | **9000** | template | — | — |
 | Provisioning test (transient, 0003) | `tf-test` | **999** | VM | — | `192.168.0.180` (verify free before apply; destroyed at end) |
+| Private-subnet test (transient, 0004) | `priv-test` | **998** | VM | `10.10.10.x` (DHCP) | — (no LAN NIC — reached only via `edge`; destroyed at end) |
 | Edge / bastion / NAT | `edge` | **101** | LXC | `10.10.10.1` | `192.168.0.10` |
 | Vault | `vault` | **102** | LXC | `10.10.10.10` | — |
 | k3s server | `k3s-1` | **110** | VM | `10.10.10.20` | — |

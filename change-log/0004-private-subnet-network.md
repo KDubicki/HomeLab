@@ -1,15 +1,17 @@
 # 0004 — Private-Subnet Network (VPC Analog)
 
-- **Status**: Proposed
+- **Status**: Implemented
 - **Date proposed**: 2026-07-03
-- **Date decided**: —
-- **Date implemented**: —
+- **Date decided**: 2026-07-04
+- **Date implemented**: 2026-07-04
 - **Owner**: KDubicki
 - **Related plans**: 0001 (foundation); depends on 0003; precedes 0005
 - **Depends on**: 0003 (guests provisioned via Terraform)
 
 ## Context
 Only `vmbr0` (LAN-facing, `192.168.0.113/24`) exists. The cloud-fidelity intent calls for a private subnet where backing services live unexposed to the LAN, reached through a controlled edge — the VPC + private-subnet + bastion pattern. There is **no managed switch** on the LAN, so VLAN tagging is off the table.
+
+**Implementation status — DONE (2026-07-04):** executed and tester-verified end-to-end. `vmbr1` (no bridge-ports, `10.10.10.0/24`) and an unprivileged LXC `edge` (VMID 101, dual-homed `192.168.0.10`/`10.10.10.1`) were provisioned via a new `terraform/modules/lxc` module; `edge` runs IP forwarding + an nftables ruleset (default-deny inbound, masquerade egress) + dnsmasq (DHCP/DNS), applied by a new Ansible `edge` role. Proven with a throwaway DHCP client (`priv-test`, VMID 998) on the private subnet: internet egress worked only through `edge`'s NAT, DNS resolved via `edge`'s dnsmasq, and the guest was unreachable directly from the LAN — reachable only via `ssh -J` through the bastion. The guest was then destroyed; only `edge` persists. One real compatibility gap was found and fixed rather than papered over: the existing `baseline` Ansible role (from 0003) unconditionally enabled `qemu-guest-agent`, which is meaningless inside an LXC (no virtio-serial channel) and would have failed the play — guarded with `ansible_virtualization_type != 'lxc'`, a fix that benefits every future LXC guest (0005 Vault, 0007 Postgres/MinIO). No `nesting` feature or privileged mode was needed for NAT/forwarding in the unprivileged container, despite Terraform's own warning about newer systemd suggesting it might be.
 
 ## Decision
 Build a private-subnet network:
@@ -48,4 +50,4 @@ Demonstrates private-subnet segmentation with a NAT/bastion edge on a single NIC
 
 ## Follow-ups
 - [ ] Document the network topology (diagram) in `docs/`.
-- [ ] Update `docs/current-state-analysis.md` and `docs/hardware.md` (network section) when implemented.
+- [x] Update `docs/current-state-analysis.md` and `docs/hardware.md` (network section) when implemented — done 2026-07-04.

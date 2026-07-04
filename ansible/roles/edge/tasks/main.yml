@@ -1,0 +1,78 @@
+---
+- name: Persist IPv4 forwarding
+  ansible.builtin.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Install nftables + dnsmasq
+  ansible.builtin.apt:
+    name: [nftables, dnsmasq]
+    update_cache: true
+    state: present
+
+- name: Install nftables ruleset (default-deny inbound, NAT egress only)
+  ansible.builtin.copy:
+    dest: /etc/nftables.conf
+    mode: "0644"
+    content: |
+      #!/usr/sbin/nft -f
+      flush ruleset
+
+      table inet filter {
+        chain input {
+          type filter hook input priority 0; policy drop;
+          iif "lo" accept
+          ct state established,related accept
+          iif "eth0" tcp dport 22 accept
+          iif "eth1" tcp dport { 22, 53 } accept
+          iif "eth1" udp dport { 53, 67 } accept
+          ip protocol icmp accept
+        }
+        chain forward {
+          type filter hook forward priority 0; policy drop;
+          ct state established,related accept
+          iif "eth1" oif "eth0" accept
+        }
+        chain output {
+          type filter hook output priority 0; policy accept;
+        }
+      }
+
+      table ip nat {
+        chain postrouting {
+          type nat hook postrouting priority 100; policy accept;
+          oif "eth0" ip saddr 10.10.10.0/24 masquerade
+        }
+      }
+  notify: reload nftables
+
+- name: Enable + start nftables
+  ansible.builtin.systemd:
+    name: nftables
+    enabled: true
+    state: started
+
+- name: Configure dnsmasq for the private subnet
+  ansible.builtin.copy:
+    dest: /etc/dnsmasq.d/edge.conf
+    mode: "0644"
+    content: |
+      interface=eth1
+      bind-interfaces
+      dhcp-range=10.10.10.100,10.10.10.200,12h
+      dhcp-option=3,10.10.10.1
+      dhcp-option=6,10.10.10.1
+      server=1.1.1.1
+      server=8.8.8.8
+      domain=lab.internal
+      local=/lab.internal/
+  notify: restart dnsmasq
+
+- name: Enable + start dnsmasq
+  ansible.builtin.systemd:
+    name: dnsmasq
+    enabled: true
+    state: started

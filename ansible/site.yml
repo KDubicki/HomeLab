@@ -3,3 +3,8 @@
   become: true
   roles:
     - baseline
+
+- hosts: edge
+  become: true
+  roles:
+    - edge

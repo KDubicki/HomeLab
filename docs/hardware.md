@@ -56,17 +56,21 @@ Reclaimed per `change-log/0002`: the old VG was removed and the disk wiped, then
 | Property | Value |
 | :--- | :--- |
 | **NIC** | Single 1GbE onboard (`nic0` / `enp0s31f6`) |
-| **Bridge** | `vmbr0` → `192.168.0.113/24`, gateway `192.168.0.1` |
+| **LAN bridge** | `vmbr0` → `192.168.0.113/24`, gateway `192.168.0.1`, `bridge-ports nic0` |
+| **Private bridge** | `vmbr1` → no host IP, `bridge-ports none` (no uplink), `10.10.10.0/24` (change-log/0004, 2026-07-04) |
 | **Link speed** | 1000 Mb/s |
 
-**Note**: only one physical NIC and one bridge exist post-reinstall. The previous setup's `vmbr1` (isolated `10.10.0.0/24` lab network) is gone — any internal/lab network segmentation will need to be rebuilt, either as a second bridge on the same NIC (VLAN-tagged) or via a Linux bridge with no physical port (as before), since there is no second physical NIC available.
+**Note**: still only one physical NIC. The private subnet (`vmbr1`) is realized as a second Linux bridge with no physical port — the single-NIC substitute for VLAN segmentation (no managed switch is available) — gatewayed by the LXC `edge` (VMID 101). See `docs/system-documentation.md` for the current network topology.
 
 ## GPU
 - Integrated Intel UHD Graphics 630 (CoffeeLake-S GT2)
 - No discrete GPU. Sufficient for hardware video transcode (e.g. Jellyfin/Plex via iGPU passthrough) but **not usable for GPU-accelerated ML/data workloads**. Any "big data" or ML component in the portfolio should be scoped to CPU-based tools (Spark local mode, DuckDB, pandas/Polars) rather than GPU-dependent frameworks.
 
 ## Current VM/CT Inventory
-One object: VMID **9000** (`debian13-cloud`), the golden Debian 13 template built by Terraform in `change-log/0003` — stopped, not a running guest. `pct list` returns empty; no containers and no persistently running VMs yet.
+- VMID **9000** (`debian13-cloud`) — golden Debian 13 VM template built by Terraform in `change-log/0003`, stopped, not a running guest.
+- VMID **101** (`edge`) — unprivileged LXC built by Terraform in `change-log/0004`, **running**: private-subnet NAT gateway + SSH bastion + DHCP/DNS.
+
+No other VMs/containers run persistently yet.
 
 ## Sizing Guidance for Planning
 With 6 vCPU / 32GB RAM / 816GB fast storage on a single node:
