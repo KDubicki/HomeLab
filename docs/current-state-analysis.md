@@ -11,9 +11,10 @@ This reboot reframes the project's purpose: previously an ad-hoc self-hosting se
 - **Proxmox VE 9.2.4** (kernel 7.0.14-2-pve) on a Dell OptiPlex 7070 (i5-9600, 32GB RAM, 1TB NVMe `local-lvm` + 256GB SSD reclaimed as `ssd-data`) — full detail in [hardware.md](hardware.md).
 - **Network**: single 1GbE NIC, single bridge `vmbr0` on `192.168.0.113/24`. No internal/lab network segment exists yet.
 - **Access**: SSH key-based root login configured (dedicated key `~/.ssh/id_ed25519_proxmox`, `ssh proxmox` alias) — see [proxmox-ssh-access.md](../proxmox-ssh-access.md).
-- **Zero running workloads.** No VMs, no containers, no services.
+- **Zero persistently running workloads.** Template 9000 exists but is stopped (a template, not a running guest); no VMs/containers run continuously yet.
 - **Storage reclaimed** (change-log/0002, 2026-07-03): the legacy 256 GB SSD — which actually held a *full* old Proxmox install, not a stray image — was wiped and is now the `ssd-data` lvmthin pool (233.5 GiB, empty). `local-lvm` (816 GiB) and `local` unchanged.
-- **IaC identity** (change-log/0002, done): Proxmox API user `terraform@pve` + token `provider` + role `TerraformProv` (21 PVE-9 privileges) + ACL at `/` — the least-privilege identity for Terraform (0003). Host `full-upgrade`d to **PVE 9.2.4**, running kernel **7.0.14-2-pve**.
+- **IaC identity** (change-log/0002, done; extended change-log/0003): Proxmox API user `terraform@pve` + token `provider` + role `TerraformProv` (22 PVE-9 privileges, including `VM.GuestAgent.Audit` added in 0003) + ACL at `/`. Host `full-upgrade`d to **PVE 9.2.4**, running kernel **7.0.14-2-pve**.
+- **IaC control plane live** (change-log/0003, done 2026-07-04): Terraform (`bpg/proxmox`) + Ansible, both installed on the workstation. Golden template **9000** (`debian13-cloud`, stock Debian 13, powered off) on `local-lvm`; reusable `terraform/modules/vm` clone module; Ansible `baseline` role (`ansible/roles/baseline`) applies qemu-guest-agent, the `deploy` sudo/key-only user, SSH hardening, and `node_exporter` to every guest. Proven end-to-end with a throwaway VM, then destroyed — no guests run persistently yet. State/secrets stay in gitignored `terraform/*.tfstate` / `terraform/secrets.auto.tfvars` until Vault (0005).
 - **This git repository**, reset to a near-empty state with the previous work preserved under `old_homelab/`.
 
 ## Constraints this design has to respect
@@ -25,7 +26,7 @@ This reboot reframes the project's purpose: previously an ad-hoc self-hosting se
 ## Open decisions before the build phase
 These need to be settled (with you) before writing any Terraform/Ansible/Kubernetes manifests, since they shape the repo structure itself:
 1. **Container orchestration**: k3s (stronger portfolio signal, more operational complexity) vs. Docker Compose/Swarm (simpler, faster to demo, less impressive to a DevOps-focused reviewer).
-2. **IaC toolchain**: Terraform for Proxmox provisioning (VM/CT lifecycle) + Ansible for in-guest configuration is the natural pairing given the `terraform/` and `ansible/` folders already present in `old_homelab/` — confirm we're keeping that pairing rather than switching to e.g. Pulumi or plain cloud-init.
+2. ~~**IaC toolchain**~~ — **settled** (`change-log/0003`): Terraform (`bpg/proxmox`) for provisioning + Ansible for in-guest configuration, live and proven end-to-end.
 3. **Data engineering component scope**: what pipeline is being demonstrated — batch ETL (Airflow/Dagster + Postgres + dbt), streaming (Kafka/Redpanda + a stream processor), or both in sequence as the project matures? This has real RAM/CPU budget implications on a 6-core/32GB box.
 4. **Network segmentation**: rebuild an isolated lab subnet (as before) or run everything flatter on `vmbr0` with firewall rules for isolation instead?
 5. **Observability**: Uptime Kuma was the old approach (simple uptime checks). A DevOps portfolio piece typically favors Prometheus + Grafana (+ Loki for logs) to demonstrate metrics/alerting depth — worth deciding now since it affects the resource budget.

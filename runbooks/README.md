@@ -11,6 +11,8 @@ _No active runbooks. One is authored per Accepted change-plan and deleted once E
 | :--- | :--- | :--- |
 | — | (none active) | — |
 
+0003 (IaC control plane) was **Executed** 2026-07-04 and its runbook deleted; `change-log/0003` now holds the durable record.
+
 ## The pipeline
 ```
 architect          devops (000N)       executer ⇄ tester        architect-docs

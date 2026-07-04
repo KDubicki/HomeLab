@@ -38,7 +38,7 @@ Two physical drives, currently asymmetric in role:
 ### NVMe (`nvme0n1`) — active
 - `pve-root`: 96 GB (`/`) — currently 4.2G used, 85G free
 - `pve-swap`: 8 GB
-- `pve-data` (LVM-thin, `local-lvm`): 816 GB — **primary pool for VM/CT disks**, currently 0% used
+- `pve-data` (LVM-thin, `local-lvm`): 816 GB — **primary pool for VM/CT disks**, currently ~0.1% used (golden template 9000's disk, `change-log/0003`)
 
 ### SATA SSD (`sda`) — reclaimed as `ssd-data` (2026-07-03)
 This disk originally held a **full previous Proxmox install** in VG `pve-OLD-B195BA60` (~237 GB: `root` 69 GB, `swap` 8 GB, a `data` thin pool ~141 GB, and a leftover `vm-220-disk-0`) — **not** a single stray 4 GB image, as an earlier draft of this doc incorrectly stated (scan-verified 2026-07-03). It survived the NVMe-only reinstall, unmounted and unregistered.
@@ -66,7 +66,7 @@ Reclaimed per `change-log/0002`: the old VG was removed and the disk wiped, then
 - No discrete GPU. Sufficient for hardware video transcode (e.g. Jellyfin/Plex via iGPU passthrough) but **not usable for GPU-accelerated ML/data workloads**. Any "big data" or ML component in the portfolio should be scoped to CPU-based tools (Spark local mode, DuckDB, pandas/Polars) rather than GPU-dependent frameworks.
 
 ## Current VM/CT Inventory
-**None.** `qm list` and `pct list` both return empty — this is a genuinely clean slate post-reinstall.
+One object: VMID **9000** (`debian13-cloud`), the golden Debian 13 template built by Terraform in `change-log/0003` — stopped, not a running guest. `pct list` returns empty; no containers and no persistently running VMs yet.
 
 ## Sizing Guidance for Planning
 With 6 vCPU / 32GB RAM / 816GB fast storage on a single node:

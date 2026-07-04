@@ -6,7 +6,7 @@
 - **Date implemented**: —
 - **Owner**: KDubicki
 - **Related plans**: 0002 (host/storage), 0003 (IaC control plane), 0004 (network), 0005 (Vault), 0006 (k3s), 0007 (managed services), 0008 (observability)
-- **Overview**: see `plan.md` for the live cross-slice status and documentation map
+- **Scope of this document**: this is the **foundational architecture decision (ADR)** — the *shape and the why*. It is **not** the roadmap: the live roadmap, execution order, and per-slice status are owned by `change-plan/plan.md`. Read that first for "where are we"; read this for "why is it built this way".
 
 ## Context
 The Proxmox host was reinstalled and is a genuine clean slate: zero VMs/containers, a single `vmbr0` bridge on `192.168.0.113/24`, 6 vCPU / 32 GB RAM / 816 GB NVMe (`local-lvm`) + a reclaimable 256 GB SATA SSD, no dGPU (see `docs/hardware.md` and `docs/current-state-analysis.md`).
@@ -16,7 +16,7 @@ The project has been deliberately reframed as a **long-term DevOps + Data Engine
 The explicit design intent, stated by the owner, is to **replicate a public-cloud environment as faithfully as possible on a single bare-metal node**, so the portfolio demonstrates cloud-native architecture patterns rather than ad-hoc self-hosting.
 
 ## Decision
-Adopt a **cloud-analog platform architecture** as the base, with a strict separation between a **compute tier** and a **managed-services tier**. This foundation plan is **split into seven independently-executed change plans (0002–0008)**; this document is the umbrella decision and roadmap they trace back to.
+Adopt a **cloud-analog platform architecture** as the base, with a strict separation between a **compute tier** and a **managed-services tier**. This foundation plan is **split into seven independently-executed change plans (0002–0008)**; this document is the **foundational decision** they trace back to. Their live status and the tracked roadmap live in `change-plan/plan.md`, not here.
 
 The layers:
 1. **Host & storage hygiene** (→ 0002) — reclaim the orphaned 256 GB SSD (`pve-OLD-B195BA60`) as a second Proxmox pool dedicated to stateful data volumes; create a dedicated non-root Proxmox API user + token for IaC.

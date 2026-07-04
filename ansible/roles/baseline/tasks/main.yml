@@ -1,0 +1,42 @@
+---
+- name: Base packages + guest agent
+  ansible.builtin.apt:
+    name: [qemu-guest-agent, sudo, curl, ca-certificates, chrony]
+    update_cache: true
+    state: present
+
+- name: Enable qemu-guest-agent
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    enabled: true
+    state: started
+
+- name: Create deploy user (sudo, key-only)
+  ansible.builtin.user:
+    name: deploy
+    groups: sudo
+    shell: /bin/bash
+    create_home: true
+
+- name: Install deploy SSH key
+  ansible.posix.authorized_key:
+    user: deploy
+    key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_ed25519_proxmox.pub') }}"
+
+- name: Passwordless sudo for deploy
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/deploy
+    content: "deploy ALL=(ALL) NOPASSWD:ALL\n"
+    mode: "0440"
+    validate: "visudo -cf %s"
+
+- name: Harden SSH (no root, no passwords)
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+  notify: restart ssh
+
+- name: Install node_exporter
+  ansible.builtin.include_tasks: node_exporter.yml

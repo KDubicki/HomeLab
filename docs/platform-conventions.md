@@ -9,7 +9,7 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 | LAN gateway | `192.168.0.1` |
 | LAN bridge | `vmbr0` |
 | SSH alias | `ssh proxmox` (root, key `~/.ssh/id_ed25519_proxmox`) |
-| Proxmox version | VE 9.2.2 (Debian 13 / trixie) |
+| Proxmox version | VE 9.2.4 (Debian 13 / trixie), kernel 7.0.14-2-pve |
 
 ## Storage pools
 | Pool ID | Type | Backing | Content | Use |
@@ -30,6 +30,7 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 | Role | Hostname | Proxmox ID | Type | Private IP | LAN IP |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Golden template | `debian13-cloud` | **9000** | template | — | — |
+| Provisioning test (transient, 0003) | `tf-test` | **999** | VM | — | `192.168.0.180` (verify free before apply; destroyed at end) |
 | Edge / bastion / NAT | `edge` | **101** | LXC | `10.10.10.1` | `192.168.0.10` |
 | Vault | `vault` | **102** | LXC | `10.10.10.10` | — |
 | k3s server | `k3s-1` | **110** | VM | `10.10.10.20` | — |
@@ -38,7 +39,7 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 
 Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg=.30 → 120).
 
-## Resource sizing (from change-plan/0001 budget)
+## Resource sizing (from change-log/0001 budget)
 | Guest | vCPU | RAM | Root disk (`local-lvm`) | Data mount (`ssd-data`) |
 | :--- | :--- | :--- | :--- | :--- |
 | `edge` | 1 | 512 MB | 4 GB | — |
@@ -61,9 +62,11 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Component | Version / channel |
 | :--- | :--- |
 | Guest OS (template) | Debian 13 (trixie) generic cloud image |
+| Debian image source | `https://saimei.ftp.acc.umu.se/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2` (direct mirror — `cloud.debian.org`'s geo-redirect took ~56s on 2026-07-04, exceeding Proxmox's download-url read timeout; this mirror answers in <1s) → downloaded to `local` as `debian-13-genericcloud-amd64.qcow2` (content `import`; already enabled on `local` in `/etc/pve/storage.cfg`) |
 | Terraform | ≥ 1.9 |
 | Terraform provider | `bpg/proxmox` ≥ 0.66 |
 | Ansible | ≥ 2.16 |
+| node_exporter | latest stable release (pin the emitted version at install) |
 | k3s | stable channel (pin the emitted version) |
 | Vault | 1.17.x |
 | PostgreSQL | 16 |
