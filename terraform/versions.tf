@@ -5,5 +5,9 @@ terraform {
       source  = "bpg/proxmox"
       version = ">= 0.66"
     }
+    vault = {
+      source  = "hashicorp/vault"
+      version = ">= 4.0"
+    }
   }
 }

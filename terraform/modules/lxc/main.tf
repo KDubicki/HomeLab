@@ -16,6 +16,15 @@ variable "disk_gb" {
   type    = number
   default = 4
 }
+variable "data_disk" {
+  # optional second volume for stateful data (e.g. Vault Raft storage), on a separate datastore
+  type = object({
+    datastore_id = string
+    size_gb      = number
+    path         = string
+  })
+  default = null
+}
 variable "template_file_id" {
   type = string
 }
@@ -56,6 +65,15 @@ resource "proxmox_virtual_environment_container" "this" {
   disk {
     datastore_id = "local-lvm"
     size         = var.disk_gb
+  }
+
+  dynamic "mount_point" {
+    for_each = var.data_disk != null ? [var.data_disk] : []
+    content {
+      volume = mount_point.value.datastore_id
+      size   = "${mount_point.value.size_gb}G"
+      path   = mount_point.value.path
+    }
   }
 
   dynamic "network_interface" {

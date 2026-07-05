@@ -69,6 +69,7 @@
       server=8.8.8.8
       domain=lab.internal
       local=/lab.internal/
+      address=/vault.lab.internal/10.10.10.10
   notify: restart dnsmasq
 
 - name: Enable + start dnsmasq

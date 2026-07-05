@@ -26,6 +26,7 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 | Gateway (edge) | `10.10.10.1` |
 | DNS for private subnet | `10.10.10.1` (dnsmasq on edge) |
 | DHCP range (private subnet) | `10.10.10.100`–`10.10.10.200` (below `.100` is reserved for statically-assigned guests) |
+| Static DNS records (dnsmasq on edge) | `vault.lab.internal` → `10.10.10.10` (added in 0005); future guests append one `address=` line each |
 
 ## IP & ID allocation plan
 | Role | Hostname | Proxmox ID | Type | Private IP | LAN IP |
@@ -70,7 +71,7 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Ansible | ≥ 2.16 |
 | node_exporter | latest stable release (pin the emitted version at install) |
 | k3s | stable channel (pin the emitted version) |
-| Vault | 1.17.x |
+| Vault | 1.17.6 (OSS), `vault_1.17.6_linux_amd64.zip`, sha256 `0cddc1fbbb88583b5ba5b845f9f8fae47c6fb39a6d48cd543c6ba6fd3ac1a669` |
 | PostgreSQL | 16 |
 | MinIO | latest stable release |
 | kube-prometheus-stack | latest stable chart |

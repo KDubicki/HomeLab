@@ -1,0 +1,5 @@
+---
+vault_version: "1.17.6"
+vault_sha256: "0cddc1fbbb88583b5ba5b845f9f8fae47c6fb39a6d48cd543c6ba6fd3ac1a669"
+vault_private_ip: "10.10.10.10"
+vault_fqdn: "vault.lab.internal"

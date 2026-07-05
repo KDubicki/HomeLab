@@ -8,3 +8,8 @@
   become: true
   roles:
     - edge
+
+- hosts: vault
+  become: true
+  roles:
+    - vault

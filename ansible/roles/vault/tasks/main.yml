@@ -1,0 +1,132 @@
+---
+- name: Install unzip + openssl
+  ansible.builtin.apt:
+    name: [unzip, openssl]
+    update_cache: true
+    state: present
+
+- name: Download Vault {{ vault_version }}
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: "/tmp/vault_{{ vault_version }}_linux_amd64.zip"
+    checksum: "sha256:{{ vault_sha256 }}"
+    mode: "0644"
+
+- name: Install vault binary
+  ansible.builtin.unarchive:
+    src: "/tmp/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: /usr/local/bin
+    remote_src: true
+    creates: /usr/local/bin/vault
+
+- name: Create vault system group
+  ansible.builtin.group:
+    name: vault
+    system: true
+
+- name: Create vault system user
+  ansible.builtin.user:
+    name: vault
+    group: vault
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Create Vault config + TLS directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0750"
+  loop:
+    - /etc/vault.d
+    - /etc/vault.d/tls
+
+- name: Own the data mount point
+  ansible.builtin.file:
+    path: /vault/data
+    state: directory
+    owner: vault
+    group: vault
+    mode: "0700"
+
+- name: Generate self-signed TLS cert (one-shot — do not regenerate once clients trust it)
+  ansible.builtin.command:
+    cmd: >
+      openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1
+      -keyout /etc/vault.d/tls/vault.key -out /etc/vault.d/tls/vault.crt
+      -days 3650 -nodes -subj "/CN={{ vault_fqdn }}"
+      -addext "subjectAltName=DNS:{{ vault_fqdn }},IP:{{ vault_private_ip }},IP:127.0.0.1"
+      -addext "keyUsage=digitalSignature,keyEncipherment"
+      -addext "extendedKeyUsage=serverAuth"
+    creates: /etc/vault.d/tls/vault.crt
+
+- name: Fix TLS material ownership/permissions
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: vault
+    group: vault
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/vault.d/tls/vault.crt, mode: "0644" }
+    - { path: /etc/vault.d/tls/vault.key, mode: "0640" }
+
+- name: Write Vault config
+  ansible.builtin.copy:
+    dest: /etc/vault.d/vault.hcl
+    owner: vault
+    group: vault
+    mode: "0640"
+    content: |
+      ui = true
+      disable_mlock = true # unprivileged LXC cannot grant CAP_IPC_LOCK
+
+      storage "raft" {
+        path    = "/vault/data"
+        node_id = "vault-1"
+      }
+
+      listener "tcp" {
+        address       = "0.0.0.0:8200"
+        tls_cert_file = "/etc/vault.d/tls/vault.crt"
+        tls_key_file  = "/etc/vault.d/tls/vault.key"
+      }
+
+      api_addr     = "https://{{ vault_private_ip }}:8200"
+      cluster_addr = "https://{{ vault_private_ip }}:8201"
+  notify: restart vault
+
+- name: Install Vault systemd unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/vault.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=HashiCorp Vault
+      Documentation=https://developer.hashicorp.com/vault/docs
+      Requires=network-online.target
+      After=network-online.target
+      ConditionFileNotEmpty=/etc/vault.d/vault.hcl
+
+      [Service]
+      User=vault
+      Group=vault
+      ExecStart=/usr/local/bin/vault server -config=/etc/vault.d/vault.hcl
+      ExecReload=/bin/kill --signal HUP $MAINPID
+      KillMode=process
+      KillSignal=SIGINT
+      Restart=on-failure
+      RestartSec=5
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: restart vault
+
+- name: Enable + start vault
+  ansible.builtin.systemd:
+    name: vault
+    enabled: true
+    state: started
+    daemon_reload: true
