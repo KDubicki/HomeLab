@@ -60,6 +60,8 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Postgres app creds | dynamic, per-consumer | issued by **Vault** database engine |
 | MinIO root | `minioadmin` replaced at setup | **Vault** KV `kv/minio` |
 | Grafana admin | — | **Vault** KV `kv/grafana` |
+| k3s → Vault reviewer identity | k8s ServiceAccount `vault-auth` (namespace `default`) bound to `system:auth-delegator`; its token is Vault's `auth/kubernetes/config` `token_reviewer_jwt` | JWT held only in Vault's auth config, never written to the repo; issued via `kubectl create token` (long-duration, manual renewal — see change-plan/0006 follow-ups) |
+| k3s sample workload secret | demo value, consumed by the Vault Agent Injector | **Vault** KV `kv/k3s/sample` |
 
 ## Software versions (pin at install; "stable" = latest stable at build time)
 | Component | Version / channel |
@@ -71,6 +73,8 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Ansible | ≥ 2.16 |
 | node_exporter | latest stable release (pin the emitted version at install) |
 | k3s | stable channel (pin the emitted version) |
+| Helm | latest stable release (pin the emitted version at install) |
+| `vault-k8s` (Helm chart, injector only — `server.enabled=false`) | latest stable chart from the `hashicorp` Helm repo |
 | Vault | 1.17.6 (OSS), `vault_1.17.6_linux_amd64.zip`, sha256 `0cddc1fbbb88583b5ba5b845f9f8fae47c6fb39a6d48cd543c6ba6fd3ac1a669` |
 | PostgreSQL | 16 |
 | MinIO | latest stable release |

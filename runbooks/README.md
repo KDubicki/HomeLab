@@ -11,6 +11,7 @@ _No active runbooks. One is authored per Accepted change-plan and deleted once E
 | :--- | :--- | :--- |
 | — | (none active) | — |
 
+0006 (k3s compute tier) was **Executed** 2026-07-06 and its runbook deleted; tester-confirmed PASS on every step and the final Definition of Done (six real defects found and fixed during execution — see the architect's change-log entry once moved); `change-log/0006` (pending architect move) will hold the durable record.
 0003 (IaC control plane) was **Executed** 2026-07-04 and its runbook deleted; `change-log/0003` now holds the durable record.
 0004 (private-subnet network) was **Executed** 2026-07-04 and its runbook deleted; tester-confirmed PASS; `change-log/0004` now holds the durable record.
 0005 (Vault secrets) was **Executed** 2026-07-05 and its runbook deleted; tester-confirmed PASS on every step and the final Definition of Done; `change-log/0005` (pending architect move) will hold the durable record.

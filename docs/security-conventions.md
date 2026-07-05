@@ -8,7 +8,7 @@ Rules that keep sensitive material out of this repository — **treat the repo a
 ## What must never be committed
 - API tokens / secret values (e.g. the Proxmox `terraform@pve!provider` token), passwords, TLS/private keys.
 - Vault unseal keys and root token, `vault operator init` output.
-- Terraform state (`*.tfstate*`) and any `*.tfvars` / `*.auto.tfvars` holding secrets.
+- Terraform state (`*.tfstate*`), plan files (`*.plan`), and any `*.tfvars` / `*.auto.tfvars` holding secrets — plans can embed resolved sensitive attribute values just like state (gap found and closed in change-log/0006).
 - kubeconfigs, SSH private keys (`id_*`), SOPS/age private keys, `.env` files.
 
 `.gitignore` covers these as a **safety net** — but the net is not the rule. The rule is "don't write them down in a tracked file."

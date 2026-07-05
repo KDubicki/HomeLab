@@ -40,3 +40,5 @@ terraform/**/*.tfstate.*
 terraform/**/*.tfvars
 !terraform/**/*.tfvars.example
 terraform/**/.terraform.lock.hcl
+# --- 0006: plan files can embed resolved sensitive attribute values, same category as state ---
+terraform/**/*.plan

@@ -35,6 +35,7 @@
           type filter hook forward priority 0; policy drop;
           ct state established,related accept
           iif "eth1" oif "eth0" accept
+          iif "eth0" oif "eth1" tcp dport { 80, 443 } accept
         }
         chain output {
           type filter hook output priority 0; policy accept;
@@ -42,6 +43,10 @@
       }
 
       table ip nat {
+        chain prerouting {
+          type nat hook prerouting priority -100; policy accept;
+          iif "eth0" tcp dport { 80, 443 } dnat to 10.10.10.20
+        }
         chain postrouting {
           type nat hook postrouting priority 100; policy accept;
           oif "eth0" ip saddr 10.10.10.0/24 masquerade

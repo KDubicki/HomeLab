@@ -1,0 +1,68 @@
+---
+- name: Install k3s server ({{ k3s_channel }} channel)
+  ansible.builtin.shell:
+    cmd: "curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL={{ k3s_channel }} sh -"
+    creates: /usr/local/bin/k3s
+
+- name: Wait for the node to report Ready
+  ansible.builtin.command: k3s kubectl wait --for=condition=Ready node --all --timeout=120s
+  changed_when: false
+
+- name: Install Helm
+  ansible.builtin.shell:
+    cmd: |
+      curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      chmod +x /tmp/get_helm.sh
+      /tmp/get_helm.sh
+    creates: /usr/local/bin/helm
+
+- name: Ensure local ~/.kube and ~/.vault-files exist on the workstation
+  ansible.builtin.file:
+    path: "{{ lookup('env','HOME') }}/{{ item }}"
+    state: directory
+    mode: "0700"
+  loop: [".kube", ".vault-files"]
+  delegate_to: localhost
+  become: false
+
+- name: "Fetch kubeconfig to the workstation (server address https://127.0.0.1:6443 already matches the SSH-tunnel pattern)"
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ lookup('env','HOME') }}/.kube/k3s-1.yaml"
+    flat: true
+    mode: "0600"
+
+- name: Fetch the k3s API server CA cert to the workstation
+  ansible.builtin.fetch:
+    src: /var/lib/rancher/k3s/server/tls/server-ca.crt
+    dest: "{{ lookup('env','HOME') }}/.vault-files/k3s-ca.crt"
+    flat: true
+    mode: "0600"
+
+- name: Create the vault-auth ServiceAccount (Vault's Kubernetes-auth reviewer identity)
+  ansible.builtin.shell:
+    cmd: k3s kubectl create serviceaccount vault-auth --namespace default --dry-run=client -o yaml | k3s kubectl apply -f -
+  register: sa_apply
+  changed_when: "'created' in sa_apply.stdout"
+
+- name: Bind vault-auth to system:auth-delegator
+  ansible.builtin.shell:
+    cmd: >
+      k3s kubectl create clusterrolebinding vault-auth-delegator
+      --clusterrole=system:auth-delegator --serviceaccount=default:vault-auth
+      --dry-run=client -o yaml | k3s kubectl apply -f -
+  register: crb_apply
+  changed_when: "'created' in crb_apply.stdout"
+
+- name: Mint a long-lived reviewer token for vault-auth (manual renewal — see change-plan/0006 Follow-ups)
+  ansible.builtin.command: k3s kubectl create token vault-auth --namespace default --duration=87600h
+  register: reviewer_jwt
+  changed_when: false
+
+- name: Save the reviewer JWT to the workstation (never committed — outside the repo)
+  ansible.builtin.copy:
+    content: "{{ reviewer_jwt.stdout }}"
+    dest: "{{ lookup('env','HOME') }}/.vault-files/k3s-reviewer.jwt"
+    mode: "0600"
+  delegate_to: localhost
+  become: false
