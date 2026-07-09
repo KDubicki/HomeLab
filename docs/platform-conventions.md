@@ -26,7 +26,7 @@ The single source of truth for every concrete value the runbooks (`runbooks/`) u
 | Gateway (edge) | `10.10.10.1` |
 | DNS for private subnet | `10.10.10.1` (dnsmasq on edge) |
 | DHCP range (private subnet) | `10.10.10.100`–`10.10.10.200` (below `.100` is reserved for statically-assigned guests) |
-| Static DNS records (dnsmasq on edge) | `vault.lab.internal` → `10.10.10.10` (added in 0005); future guests append one `address=` line each |
+| Static DNS records (dnsmasq on edge) | `vault.lab.internal` → `10.10.10.10` (added in 0005); `pg.lab.internal` → `10.10.10.30`, `minio.lab.internal` → `10.10.10.40` (allocated for 0007); future guests append one `address=` line each |
 
 ## IP & ID allocation plan
 | Role | Hostname | Proxmox ID | Type | Private IP | LAN IP |
@@ -62,6 +62,9 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Grafana admin | — | **Vault** KV `kv/grafana` |
 | k3s → Vault reviewer identity | k8s ServiceAccount `vault-auth` (namespace `default`) bound to `system:auth-delegator`; its token is Vault's `auth/kubernetes/config` `token_reviewer_jwt` | JWT held only in Vault's auth config, never written to the repo; issued via `kubectl create token` (long-duration, manual renewal — see change-plan/0006 follow-ups) |
 | k3s sample workload secret | demo value, consumed by the Vault Agent Injector | **Vault** KV `kv/k3s/sample` |
+| Postgres Vault-management superuser | `vaultadmin` (used only by Vault's `database/` engine to create/drop dynamic roles) | password generated at setup, written straight into `database/config/postgresql` by the operator's own Vault CLI session — never in the repo |
+| k3s → Vault consumer identity (Postgres) | k8s ServiceAccount `pg-client` (namespace `default`) bound to Vault k8s-auth role `k3s-pg`, policy `pg-read` (`database/creds/app`, read) | reuses the `kubernetes` auth method configured in 0006; no new reviewer identity needed |
+| k3s → Vault consumer identity (MinIO) | k8s ServiceAccount `minio-client` (namespace `default`) bound to Vault k8s-auth role `k3s-minio`, policy `minio-read` (`kv/data/minio`, read) | reuses the `kubernetes` auth method configured in 0006 |
 
 ## Software versions (pin at install; "stable" = latest stable at build time)
 | Component | Version / channel |
@@ -76,8 +79,8 @@ Future guests: LXC 12x, VMs 11x, keep private IPs in the matching last octet (pg
 | Helm | latest stable release (pin the emitted version at install) |
 | `vault-k8s` (Helm chart, injector only — `server.enabled=false`) | latest stable chart from the `hashicorp` Helm repo |
 | Vault | 1.17.6 (OSS), `vault_1.17.6_linux_amd64.zip`, sha256 `0cddc1fbbb88583b5ba5b845f9f8fae47c6fb39a6d48cd543c6ba6fd3ac1a669` |
-| PostgreSQL | 16 |
-| MinIO | latest stable release |
+| PostgreSQL | 17 (corrected from the originally-planned 16 for 0007: Debian 13 trixie's native `postgresql` package resolves to `17+278` — using the native repo avoids adding the third-party PGDG apt repo just to pin an older major version) |
+| MinIO | `RELEASE.2025-09-07T16-13-09Z` (pinned at 0007 authoring time — latest stable as of 2026-07-09), sha256 `7c5bd8512c6e966455b1d198209358b2d191c77a83ab377c4073281065fb855f` |
 | kube-prometheus-stack | latest stable chart |
 
 ## Repo layout (target)

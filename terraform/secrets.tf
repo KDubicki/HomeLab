@@ -8,7 +8,7 @@ variable "vault_secret_id" {
 
 provider "vault" {
   address          = "https://127.0.0.1:8200" # via the SSH tunnel to edge → vault; see runbooks/0005 Step 10
-  ca_cert_file     = pathexpand("~/.vault/vault-ca.crt")
+  ca_cert_file     = pathexpand("~/.vault-files/vault-ca.crt")
   skip_child_token = true # our AppRole token is already scoped to kv/data/proxmox/* read-only; no auth/token/create privilege granted
 
   auth_login {

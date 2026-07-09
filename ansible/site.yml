@@ -18,3 +18,13 @@
   become: true
   roles:
     - k3s
+
+- hosts: pg
+  become: true
+  roles:
+    - pg
+
+- hosts: minio
+  become: true
+  roles:
+    - minio

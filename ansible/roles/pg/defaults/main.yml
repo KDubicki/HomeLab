@@ -1,0 +1,4 @@
+---
+pg_version: "17"
+pg_data_dir: "/pg/data/17/main"
+pg_listen_addr: "10.10.10.30"
